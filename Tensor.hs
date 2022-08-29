@@ -64,7 +64,7 @@ data T a = Flat {
  ,f:: !(VI -> a)
 }
 makeFieldLabelsNoPrefix ''T
-instance (VU.Unbox a) => Empty (T a) where empty = Flat empty empty
+instance (VU.Unbox a, Empty a) => Empty (T a) where empty = Flat empty (VU.singleton empty)
 instance Sh (T a) where
   _sh t@Flat{} = _sh $ _tdims t
   _sh t@Mapped{} = _sh $ _fdims t
@@ -88,7 +88,6 @@ instance Tensor T where
 
   look t d = peek t . emap (d !) $ keys t
   {-# INLINE look #-}
-
 
 instance Mapping T where
   type Key T = VI
