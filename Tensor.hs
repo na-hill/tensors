@@ -35,7 +35,6 @@ import Exo.Foldable
 import Exo.Mapping
 import Exo.Traversable
 import Exo.Zippable
-import Exo.Vector
 
 import Tensor.Scalar
 import Tensor.Shape
@@ -89,6 +88,7 @@ instance Tensor T where
 
   look t d = peek t . emap (d !) $ keys t
   {-# INLINE look #-}
+
 
 instance Mapping T where
   type Key T = VI

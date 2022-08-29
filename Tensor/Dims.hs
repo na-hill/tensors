@@ -4,6 +4,7 @@
 module Tensor.Dims where
 
 import qualified Data.Ix as I
+import qualified Math.Combinat.Permutations as P
 import qualified Data.Map as M
 import qualified Data.Map.Ordered.Strict as O
 import qualified Data.Vector.Unboxed as VU
@@ -15,10 +16,10 @@ import Data.Maybe
 import Combinator
 import Empty
 
+import Exo
 import Exo.Functor
 import Exo.Foldable
 import Exo.Zippable
-import Exo.Vector
 
 import Tensor.Shape
 
@@ -53,7 +54,7 @@ class (Sh d) => Dim d where
   haskey:: d -> K -> Bool
   haskey d = \k -> VU.elem k $ keys d
 
-  -- | List the index map of each address in order.  
+  -- | List the index map of each address in order.
   genixmaps:: d -> [M.Map K Int]
   genixmaps d = fromList . toList . ezip (keys d) `emap` genixs d
 

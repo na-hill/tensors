@@ -3,6 +3,7 @@
 module Tensor.Shape where
 
 import qualified Data.Ix as I
+import qualified Math.Combinat.Permutations as P
 import qualified Data.Vector.Unboxed as VU
 
 import GHC.Exts (IsList, Item, fromList, toList)
@@ -13,10 +14,10 @@ import Combinator
 import Empty
 import If
 
+import Exo
 import Exo.Functor
 import Exo.Foldable
 import Exo.Traversable
-import Exo.Vector
 import Exo.Zippable
 
 type V a = VU.Vector a
@@ -64,7 +65,7 @@ class Sh s where
   infixr 5 `cklea`
   {-# INLINE cklea #-}
 
-  -- | List the index vector corresponding to each address in order.  
+  -- | List the index vector corresponding to each address in ascending order.
   genixs:: s -> [VI]
   genixs s =  getZip `emap` etravm2 (curry I.range) (Zip . imins $ s) (Zip . imaxs $ s)
 

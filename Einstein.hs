@@ -13,6 +13,7 @@ import GHC.Exts (fromList, toList)
 import Exo.Functor
 import Exo.Foldable
 import Exo.Mapping
+import Exo.Zippable
 
 import Combinator
 import Empty
@@ -32,17 +33,9 @@ idt:: (Num a) => VI -> a
 idt = b2n . (<2) . len . VU.uniq
 
 -- TODO: Write these in a less awful fashion, or just write a new version that applies strategy to the order of subproducts
-
 reduce:: (Num a, Subcat T a) => [K] -> [T a] -> T a
---reduce ks ts = reduce_ (efold' dimu empty ts) ks ts
-
 reduce ks ts = let d = efold' dimu empty ts in
   innerprod d empty $ efold' (\a k -> uncurry (:) $ subprod d [k] a) ts ks
-
-{-
-reduce_ d (k:ks) ts = reduce_ d ks $! subprod d [k] ts
-reduce_ d _ ts = innerprod d empty ts
--}
 
 -- | Isolate tensors which have certain keys, then eliminate those keys.  The distributive law says we can do this, avoiding some unnecessary O(n) multiplication.
 subprod:: (Num a, Subcat T a) => Dmap -> [K] -> [T a] -> (T a, [T a])
@@ -63,13 +56,20 @@ innerprod restriction ks ts = let
   
   -- Reorder dimensions so that ks are innermost, so we can take the inner product efficiently.
   dim_inner = fromList $ emap (\k-> (k, d ! k)) ks :: Dims
+  tps = emap (id `merge` positions (keys dim_outer VU.++ keys dim_inner) . keys) ts
 
-  -- View t through reordered indicies (TODO: permutations + peek should be better)
-  vs = (\ix1 ix2 t -> t `look` M.union ix1 ix2) `b0` 
-                    emap /. genixmaps dim_outer `x1`
-    efold' (+) 0 ./ emap /. genixmaps dim_inner `x1`
-    efold' (*) 1 ./ emap /. ts
+  -- View t through reordered indicies
+  vs = (\ix1 ix2 (t,p) -> peek t $ emap ((ix1 VU.++ ix2)!) p) `b0`
+                    emap /. genixs dim_outer `x1`
+    efold' (+) 0 ./ emap /. genixs dim_inner `x1`
+    efold' (*) 1 ./ emap /. tps
   in Flat dim_outer (fromList vs)
+
+-- | Given a reordered subset of keys, generate the positions in the superset of each key of the subset.
+positions:: VK -> VK -> V Int
+positions big small = let
+  bigs = M.fromList . toList $ VU.imap (\i k -> (k,i)) big
+  in emap (bigs!) small
 
 tmul:: (Num a, Subcat T a) => T a -> T a -> T a
 tmul x y = innerprod empty empty [x,y]

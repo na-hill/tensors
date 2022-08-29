@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies, ConstraintKinds #-}
 
-module Exo.Vector where
+module Exo.Inst.Vector where
 
 import qualified Data.Stream.Monadic as SM
 import qualified Data.Vector.Storable as VS
