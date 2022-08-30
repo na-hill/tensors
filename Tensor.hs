@@ -65,13 +65,19 @@ data T a = Flat {
 }
 makeFieldLabelsNoPrefix ''T
 instance (VU.Unbox a, Empty a) => Empty (T a) where empty = Flat empty (VU.singleton empty)
+instance Exo T where type Subcat T a = (VU.Unbox a, Empty a)
 instance Sh (T a) where
   _sh t@Flat{} = _sh $ _tdims t
   _sh t@Mapped{} = _sh $ _fdims t
 instance Dim (T a) where
   _dims t@Flat{} = _tdims t
   _dims t@Mapped{} = _fdims t
-instance Exo T where type Subcat T a = (VU.Unbox a, Empty a)
+
+-- | Permuted indicies form an equivalence class so long as the mapping is the same.
+instance (Eq a, Subcat T a) => Eq (T a) where
+  t == u = let
+    f x = M.fromList $ genixmaps x `ezip` toList (vals x)
+    in f t == f u
 
 instance Tensor T where
   flatten t = Flat (_dims t) (vals t)
