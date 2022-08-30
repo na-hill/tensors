@@ -32,7 +32,15 @@ levciv vs = not (P.isPermutation vs) ? 0 $
 idt:: (Num a) => VI -> a
 idt = b2n . (<2) . len . VU.uniq
 
+countkeys:: (Num a, Subcat T a) => [T a] -> M.Map K Int
+countkeys = M.fromListWith (+) . toList . emap (\k -> (k,1)) . efoldMap keys
+
+-- | Compute an Einstein summation using the original definition (summed indicies appear exactly twice).  For more general cases, use 'reduce'.
+einsum:: (Num a, Subcat T a) => [T a] -> T a
+einsum ts = reduce (emap fst . listkv . M.filter (==2) $ countkeys ts) ts
+
 -- TODO: Write these in a less awful fashion, or just write a new version that applies strategy to the order of subproducts
+-- | Take the product, summed over a subset of indicies.
 reduce:: (Num a, Subcat T a) => [K] -> [T a] -> T a
 reduce ks ts = let d = efold' dimu empty ts in
   innerprod d empty $ efold' (\a k -> uncurry (:) $ subprod d [k] a) ts ks
