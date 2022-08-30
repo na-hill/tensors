@@ -4,16 +4,22 @@ module Tests where
 
 import Data.Bool (bool)
 import Data.Functor.Identity (runIdentity)
-import Data.Map (fromList)
 import Data.List (transpose)
 import Data.Monoid (Sum(..))
+import GHC.Exts (toList, fromList)
 import qualified Data.Set as S
+import qualified Data.Map as M
 
 import Test.HUnit
 
+import Exo.Foldable
+import Exo.Mapping
 import Einstein
 import Combinator
+import Empty
 import If
+import Tensor
+import Tensor.Test
 
 tests = test [
   "Merges" ~: [
@@ -34,7 +40,7 @@ tests = test [
     "Plain" ~: [
 
       assertEqual "Mixed types"
-        [ fromList [
+        [ M.fromList [
             (0,[[("x0","y0","z0",1),("x0","y0","z0",1)],[("x0","y0","z1",1),("x0","y0","z1",1)]])
            ,(1,[[("x0","y1","z0",1),("x0","y1","z0",1)],[("x0","y1","z1",1),("x0","y1","z1",1)]])]
          ,fromList [
@@ -95,6 +101,21 @@ tests = test [
         ( cur4 id `f1` [1,2] `a1` [3,4] `a1` [5,6] `a1` [7,8])
         $ cur4 id `b0` [1,2] `jt` [3,4] `jt` [5,6] `jt` [7,8] `xt` id
      ]
+   ]
+ ,"Einstein summation" ~: [
+
+    assertEqual "Matrix multiplication"
+      ( ix2 "ik" [[22,28],[49,64]])
+      $ reduce "j" [ix2 "ij" [[1,2,3],[4,5,6]] :: T Int, ix2 "jk" [[1,2],[3,4],[5,6]]]
+
+   ,assertEqual "Handle empty"
+      ( ix1 "i" [0,0])
+      $ reduce "j" [ix2 "ij" [[1,2,3],[4,5,6]] :: T Int, empty]
+
+   ,assertEqual "Big product"
+      ( ix2 "kl" [[552,294,786,318],[182,154,266,98],[252,194,366,138]])
+      $ reduce "ij" [ix2 "ij" [[0,1],[2,3],[4,5]] :: T Int, ix2 "jk" [[6,7,8],[9,0,1],[2,3,4],[5,6,7]], ix3 "lij" [[[1,2],[3,4],[5,6]],[[7,8],[9,0],[1,2]],[[3,4],[5,6],[7,8]],[[9,0],[1,2],[3,4]]]]
+
    ]
  ]
 
