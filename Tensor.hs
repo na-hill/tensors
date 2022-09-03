@@ -142,11 +142,13 @@ instance (Num a, Subcat T a) => Num (T a) where
 
 instance (VU.Unbox a, Scalar a, Empty a) => Show (T a) where
   show t = (show $ _dims t) ++
-    (\(ixv, v) -> (_ws $ efold' _countrz (0, 0) $ ixv `ezip` imins t) ++ pp v) `foldMap` listkv t
+    (\(ixv, v) -> (_ws . _countrz $ ixv `ezip` imins t) ++ pp v) `foldMap` listkv t
 
 -- Count the index vector's length and trailing "zeroes"
-_countrz:: (Int, Int) -> (Int,Int) -> (Int, Int)
-_countrz (ndim, acc) (i, imin) = (ndim+1, i==imin ? acc+1 $ 0) 
+_countrz:: (F1 f, Foldcat f (Int, Int)) => f (Int, Int) -> (Int, Int)
+_countrz = foldf' $
+  fld (pure.(+1)) 0 `emergea2`
+  fld (\a (i,i0) -> i==i0 ? a+1 $ 0) 0
 
 -- | Spacing for pretty print.  FIXME
 _ws:: (Int,Int)->String
