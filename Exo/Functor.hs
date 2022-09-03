@@ -57,6 +57,10 @@ class (Exo f) => A1 f where
 class (Exo f) => A2 f where
   elifta2:: (Subcat f a, Subcat f b, Subcat f c) => (a->b->c) -> f a -> f b -> f c
 
+emergea2:: (A2 f, Subcat f a, Subcat f b, Subcat f (a,b)) => f a -> f b -> f (a,b)
+emergea2 = elifta2 (,)
+infixr 3 `emergea2`
+
 class (A2 f) => A3 f where
   elifta3:: (Subcat f a, Subcat f b, Subcat f c, Subcat f d) => (a->b->c->d) -> f a -> f b -> f c -> f d
 
