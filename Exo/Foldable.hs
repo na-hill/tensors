@@ -124,6 +124,29 @@ class (F1 f) => F2 f where
     f a1 -> f a2 -> c
   efold2 = eliftf2 (,)
 
+-- | See [http://squing.blogspot.com/2008/11/beautiful-folding.html]
+data Fold a c = forall b . Fold (b->a->b) b (b->c)
+data Pair a b = P !a !b
+
+fld:: (b->a->b) -> b -> Fold a b
+fld f z = Fold f z id
+
+foldf:: (Foldcat t a, F1 t) => (forall b . (b->a->b) -> b -> t a -> b) -> Fold a c -> t a -> c
+foldf h (Fold f z g) = g . h f z
+
+foldf':: (Foldcat t a, F1 t) => Fold a c -> t a -> c
+foldf' = foldf efold'
+
+instance Exo (Fold a)
+instance A0 (Fold a) where epure = Fold epure () . epure
+instance A1 (Fold a) where emap h (Fold f z g) = Fold f z (emap h g)
+instance A2 (Fold a) where
+  elifta2 h (Fold f1 z1 g1) (Fold f2 z2 g2) = Fold
+    (\(P a1 a2) x -> P (f1 a1 x) (f2 a2 x))
+    (P z1 z2)
+    (\(P a1 a2) -> g1 a1 `h` g2 a2)
+instance Exoap (Fold a)
+
 -- * Instances
 
 instance F0 []
