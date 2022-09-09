@@ -4,14 +4,17 @@
 module Tensor.Dims where
 
 import qualified Data.Ix as I
-import qualified Math.Combinat.Permutations as P
+import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Map.Ordered.Strict as O
 import qualified Data.Vector.Unboxed as VU
+import qualified Math.Combinat.Permutations as P
 
 import GHC.Exts (IsList, Item, fromList, toList)
 
 import Data.Maybe
+
+import Test.QuickCheck
 
 import Combinator
 import Empty
@@ -95,3 +98,9 @@ instance Show Dims where
 
 showdim:: (K, (Int, Int)) -> String
 showdim (k,v) = (k:": ") ++ showsh v
+
+instance Arbitrary Dims where
+  arbitrary = sized \n -> do
+    maxdims <- chooseInt (0,n)
+    letters <- fromList . L.nub `emap` vectorOf maxdims (chooseEnum ('i','n'))
+    Dims letters `emap` resize (len letters) arbitrary
