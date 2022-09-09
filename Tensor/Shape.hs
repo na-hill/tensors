@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell, DataKinds, TypeFamilies, UndecidableInstances #-}
+{-# LANGUAGE LambdaCase, BlockArguments #-}
 
 module Tensor.Shape where
 
@@ -9,6 +10,7 @@ import qualified Data.Vector.Unboxed as VU
 import GHC.Exts (IsList, Item, fromList, toList)
 
 import Optics
+import Test.QuickCheck
 
 import Combinator
 import Empty
@@ -92,3 +94,13 @@ instance Show Shape where show s = efoldMap showsh $ imins s `ezip` imaxs s
 
 showsh:: (Int, Int) -> String
 showsh (a,b) = "[" ++ show a ++ ".." ++ show b ++ "]  ->  "
+
+instance (VU.Unbox a, Arbitrary a) => Arbitrary (VU.Vector a) where
+  arbitrary = sized \n ->
+    fromList `emap` vectorOf n arbitrary
+
+instance Arbitrary Shape where
+  arbitrary = do
+    mins <- arbitrary
+    maxs <- eliftz2 (+) mins . emap (+1) . emap abs `emap` arbitrary
+    pure $ Shape mins maxs
