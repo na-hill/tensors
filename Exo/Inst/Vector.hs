@@ -17,47 +17,6 @@ import Exo.Traversable
 import Exo.Zippable
 import Exo.Mapping
 
-{-
-TODO applicative streams?
-
-instance (Applicative m) => T1A (SM.Stream m) where
-
--- | Zip two 'Stream's with the given monadic function
-zipWithM :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> Stream m c
-{-# INLINE_FUSED zipWithM #-}
-zipWithM f (Stream stepa ta) (Stream stepb tb) = Stream step (ta, tb, Nothing)
-  where
-    {-# INLINE_INNER step #-}
-    step (sa, sb, Nothing) = fmap \case
-        Yield x sa' -> Skip (sa', sb, Just x)
-        Skip    sa' -> Skip (sa', sb, Nothing)
-        Done        -> Done
-      $ stepa sa
-
-    step (sa, sb, Just x) = fmap \case
-        Yield y sb' -> (flip Yield) (sa, sb', Nothing) <$> f x y
-        Skip    sb' -> Skip (sa, sb', Just x)
-        Done        -> Done
-      $ stepb sb
-
--- | Map a monadic function over a 'Stream'
-mapM :: Monad m => (a -> m b) -> Stream m a -> Stream m b
-{-# INLINE_FUSED mapM #-}
-mapM f (Stream step t) = Stream step' t
-  where
-    {-# INLINE_INNER step' #-}
-    step' s = \case
-      Yield x s' -> fmap (`Yield` s') (f x)
-      Skip    s' -> pure (Skip    s')
-      Done       -> pure Done
-      (step s)
-
-
-instance (Applicative m) => T1A (BM.Bundle m VU.Vector) where
-  {-# INLINE_FUSED etrava #-}
-  etrava f BM.Bundle{BM.sElems = s, BM.sSize = n} = BM.fromStream (etrava f s) n
--}
-
 instance Exo VU.Vector where type Subcat VU.Vector a = (VU.Unbox a)
 instance A0 VU.Vector where epure = VU.singleton
 instance A1 VU.Vector where emap = VU.map
