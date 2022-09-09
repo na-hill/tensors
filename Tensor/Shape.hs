@@ -83,6 +83,9 @@ class Sh s where
   sizes:: s -> VI
   sizes = (elifta2.eliftz2) (-) emaxs imins
 
+  volume:: s -> Int
+  volume = efold' (*) 1 . (elifta2.eliftz2) (curry I.rangeSize) imins imaxs
+
 instance Empty Shape where empty = Shape empty empty
 instance Sh Shape where _sh = id
 instance Show Shape where show s = efoldMap showsh $ imins s `ezip` imaxs s
