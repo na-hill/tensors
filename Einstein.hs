@@ -5,6 +5,7 @@ module Einstein where
 import qualified Data.Vector.Unboxed as VU
 
 import qualified Data.List as L
+import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Math.Combinat.Permutations as P
 
@@ -30,7 +31,7 @@ levciv vs = not (P.isPermutation vs) ? 0 $
 
 -- | Generates the identity tensor
 idt:: (Num a) => VI -> a
-idt = b2n . (<2) . len . VU.uniq
+idt = b2n . (<2) . len . S.fromList . toList
 
 countkeys:: (Num a, Subcat T a) => [T a] -> M.Map K Int
 countkeys = M.fromListWith (+) . toList . emap (\k -> (k,1)) . efoldMap keys
