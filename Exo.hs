@@ -2,6 +2,7 @@ module Exo where
 
 import Exo.Inst.Permutation
 import Exo.Inst.Vector
+import Exo.Inst.Gen
 
 import Exo.Functor
 import Exo.Foldable
