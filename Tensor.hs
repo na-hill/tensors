@@ -25,6 +25,7 @@ import GHC.Exts (toList, fromList)
 import GHC.Magic (oneShot)
 
 import Optics
+import Test.QuickCheck
 
 import Combinator
 import If
@@ -82,15 +83,25 @@ instance (Eq a, Subcat T a) => Eq (T a) where
 instance Tensor T where
   flatten t = Flat (_dims t) (vals t)
 
-  vals Flat{_vals=v} = v
-  vals t@Mapped{} = fromList $ peek t `emap` genixs t
+  vals t = case t of
+    Flat{_vals=v} -> v
+    Mapped{} -> fromList $ peek t `emap` genixs t
+    -- _ -> vals . flatten $ t
 
-  peek t@Flat{_vals=v} ixv = v ! lea t ixv
-  peek Mapped{f=f} ixv = f ixv
+  peek t ixv = case t of
+    Mapped{f=f} ->
+      f ixv
+    Flat{_vals=v} ->
+      v ! lea t ixv
+    -- _ -> flatten t `peek` ixv
   {-# INLINE peek #-}
 
-  ckpeek t@Flat{_vals=v} ixv = (v !) `emap` cklea t ixv
-  ckpeek t@Mapped{f=f} ixv = const (f ixv) `emap` cklea t ixv
+  ckpeek t ixv = case t of
+    Flat{_vals=v} ->
+      (v !) `emap` cklea t ixv
+    Mapped{f=f} ->
+      const (f ixv) `emap` cklea t ixv
+    -- _ -> flatten t `ckpeek` ixv
 
   look t d = peek t . emap (d !) $ keys t
   {-# INLINE look #-}
@@ -112,6 +123,14 @@ instance A2 T where
     d = fromList.toList $ dmap t1 `dimu` t2 :: Dims
     vs = elifta2 f (look t1) (look t2) `emap` genixmaps d
     in Flat d (fromList vs)
+
+instance (Arbitrary a, Subcat T a) => Arbitrary (T a) where
+  arbitrary = oneof [
+    do
+      d <- arbitrary
+      vs <- fromList `emap` vectorOf (volume d) arbitrary
+      pure $ Flat d vs
+   ]
 
 {-
 -- Turns out this is not so useful
