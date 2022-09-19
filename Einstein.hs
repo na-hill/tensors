@@ -55,14 +55,14 @@ subprod d ks ts = let
 -- | Does not sanity check ks as subprod does.
 innerprod:: (Num a, Subcat T a) => Dmap -> [K] -> [T a] -> T a
 innerprod restriction ks ts = let
-  -- The dim map for our calculations (includes ks, excludes indicies that only appear in @d@).  
+  -- The dim map for our calculations (includes ks, excludes indicies that only appear in @d@).
   -- Compute only what we'll need for the whole einsum.
-  -- Note if d is empty, we compute the whole thing.  
+  -- Note if d is empty, we compute the whole thing.
   d = restriction `restrict` efold' dimu empty ts
 
   -- The dimensions after summing over ks.
   dim_outer = fromList.toList $ efold' del d ks :: Dims
-  
+
   -- Reorder dimensions so that ks are innermost, so we can take the inner product efficiently.
   dim_inner = fromList $ emap (\k-> (k, d ! k)) ks :: Dims
   tps = emap (id `merge` positions (keys dim_outer VU.++ keys dim_inner) . keys) ts
