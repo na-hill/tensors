@@ -102,5 +102,7 @@ showdim (k,v) = (k:": ") ++ showsh v
 instance Arbitrary Dims where
   arbitrary = sized \n -> do
     maxdims <- chooseInt (0,n)
-    letters <- fromList . L.nub `emap` vectorOf maxdims (chooseEnum ('i','n'))
-    Dims letters `emap` resize (len letters) arbitrary
+    ks <- fromList . L.nub `emap`
+      vectorOf maxdims (chooseEnum ('i','n'))
+    sh <- resize (len ks) arbitrary
+    pure $ Dims ks sh

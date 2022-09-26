@@ -128,7 +128,8 @@ instance (Arbitrary a, Subcat T a) => Arbitrary (T a) where
   arbitrary = oneof [
     do
       d <- arbitrary
-      vs <- fromList `emap` vectorOf (volume d) arbitrary
+      vs <- fromList `emap`
+        vectorOf (volume d) arbitrary
       pure $ Flat d vs
    ]
 

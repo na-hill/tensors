@@ -97,10 +97,13 @@ showsh (a,b) = "[" ++ show a ++ ".." ++ show b ++ "]  ->  "
 
 instance (VU.Unbox a, Arbitrary a) => Arbitrary (VU.Vector a) where
   arbitrary = sized \n ->
-    fromList `emap` vectorOf n arbitrary
+    emap fromList . vectorOf n . scale (*2) $ arbitrary
 
 instance Arbitrary Shape where
-  arbitrary = do
-    mins <- arbitrary
-    maxs <- eliftz2 (+) mins . emap (+1) . emap abs `emap` arbitrary
+  arbitrary = sized \n -> do
+    -- Try to generate more stuff so arbitrary @[T Int] intersects nontrivially
+    mins <- efold' (eliftz2 min) `emap` arbitrary `eap`
+      vectorOf n arbitrary
+    maxs <- efold' (eliftz2 max) `emap` arbitrary `eap`
+      vectorOf n arbitrary
     pure $ Shape mins maxs
