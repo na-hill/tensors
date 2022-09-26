@@ -18,7 +18,7 @@ class (A0 f, A2 f) => FA f where
   eliftfa f g z = efold c (elifta0 z) where
     c x a = elifta2 g (f x) a
     {-# INLINE c #-}
-  
+
   -- | Equivalent to emap (efold' g z) . etrave f, without the traversal's laziness, or the requirement that @t@ is traversable or that @f@ admits @t b@.
   -- | Also equivalent to efold' (\a x -> elifta2 f a (g x))
   eliftfa':: (F1 t, Foldcat t a, Subcat f b, Subcat f c) => (a -> f b) -> (c -> b -> c) -> c -> t a -> f c
